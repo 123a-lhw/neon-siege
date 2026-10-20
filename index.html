@@ -7,6 +7,13 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305060a'/%3E%3Cpath d='M24 16 10 24l3-8-3-8z' fill='%2358a6ff'/%3E%3C/svg%3E" />
 <title>NEON SIEGE · 霓虹围城</title>
 <meta name="description" content="NEON SIEGE 霓虹围城 —— 单文件街机生存射击：自动瞄准，专注走位与冲刺。" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="NEON SIEGE · 霓虹围城" />
+<meta property="og:description" content="自动瞄准，专注走位。60 秒一局的霓虹街机生存射击，打开即玩。" />
+<meta property="og:image" content="https://123a-lhw.github.io/neon-siege/preview.png" />
+<meta property="og:url" content="https://123a-lhw.github.io/neon-siege/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="canonical" href="https://123a-lhw.github.io/neon-siege/" />
 <style>
   :root {
     --bg: #05060a;
@@ -113,6 +120,9 @@
   .final b { font-size: clamp(22px, 4.6vmin, 40px); font-weight: 800; font-family: ui-monospace, Consolas, monospace; }
   .final .hi b { color: #ffd166; }
   .newbest { color: #ffd166; font-size: clamp(10px,1.6vmin,14px); letter-spacing: .18em; margin-bottom: 2.2vmin; }
+  .tag.target { color: #ffd166; margin-top: -.6em; }
+  .share { margin: 0 auto 1.4vmin; max-width: 90%; font-size: clamp(9px, 1.35vmin, 12px); color: var(--dim); }
+  .share code { color: #79c0ff; font-family: ui-monospace, Consolas, monospace; word-break: break-all; }
 
   /* ---------- mute ---------- */
   .mute {
@@ -125,10 +135,88 @@
   .mute:hover { opacity: 1; }
   .mute.off { opacity: .32; }
 
+  /* ---------- V1.0 移动端按钮：热区 64/48，视觉 56/40（7.5） ---------- */
+  #pauseBtn, #dashBtn {
+    position: absolute; z-index: 5; cursor: pointer;
+    border: 0; background: transparent; color: #c9d1d9;
+    display: none; place-items: center;
+    -webkit-tap-highlight-color: transparent; padding: 0;
+  }
+  #pauseBtn { right: 14px; top: 14px; width: 48px; height: 48px; font-size: 15px; }
+  #pauseBtn::before {
+    content: ""; position: absolute; inset: 4px; border-radius: 11px;
+    border: 1px solid #2a3441; background: rgba(13,17,23,.78);
+  }
+  #pauseBtn:active::before { background: rgba(30,40,54,.9); }
+  #dashBtn {
+    right: 16px; bottom: 62px; width: 64px; height: 64px;
+    color: #79c0ff; font-size: 13px; font-weight: 800; letter-spacing: .08em;
+  }
+  #dashBtn::before {
+    content: ""; position: absolute; inset: 4px; border-radius: 50%;
+    border: 1px solid #2a3441;
+    background: conic-gradient(rgba(88,166,255,.38) calc(var(--p,100) * 1%), rgba(13,17,23,.78) 0);
+  }
+  #dashBtn.cooling { color: #57606a; }
+
+  .ghost {
+    margin-top: 1.6vmin; padding: .45em 1.1em; border-radius: 999px;
+    border: 1px solid #2a3441; background: transparent; color: #8b949e;
+    font: inherit; font-size: clamp(10px, 1.4vmin, 13px); cursor: pointer;
+  }
+  .ghost:hover { color: #e6edf3; border-color: #58a6ff; }
+
+  #wrap.reduced * { animation: none !important; transition: none !important; }
+
+  /* ---------- 隐私说明 / 年龄提示（V1.0 P0） ---------- */
+  .legal { max-width: min(88vw, 46em); text-align: left; max-height: 68vh; overflow: auto; }
+  .legal h1 { font-size: clamp(20px, 4.6vmin, 34px); letter-spacing: .04em; margin-bottom: .5em; }
+  .legal h2 { font-size: clamp(12px, 2vmin, 16px); margin: 1.4em 0 .45em; color: #c9d1d9; letter-spacing: .04em; }
+  .legal p, .legal li { font-size: clamp(11px, 1.7vmin, 14px); line-height: 1.6; color: #a9b4c0; margin: 0 0 .55em; }
+  .legal ul { margin: 0 0 .8em; padding-left: 1.2em; }
+  .legal code { font-family: ui-monospace, Consolas, monospace; color: #79c0ff; font-size: .94em; }
+  .legal .actions { display: flex; gap: .7em; flex-wrap: wrap; margin-top: 1.6em; }
+  .gate .panel { max-width: min(92vw, 40em); }
+  .gate__age { color: #ffd166; font-size: clamp(11px, 1.7vmin, 14px); margin-bottom: 1.2em; }
+
+  @media (pointer: coarse), (max-width: 720px) {
+    #pauseBtn, #dashBtn { display: grid; }
+    .hint { display: none; }
+    .mute { right: 72px; bottom: auto; top: 20px; }
+  }
+
+  /* 320px 级窄屏：HUD 收紧，避免左右两栏相撞（FR-HUD-06） */
+  @media (max-width: 420px) {
+    #hud { padding: 8px 10px; }
+    .score { font-size: clamp(18px, 6.4vmin, 26px); }
+    .sub { gap: .35em; margin-top: 3px; font-size: clamp(8px, 2.5vmin, 11px); }
+    .label { letter-spacing: .1em; }
+    .hearts { gap: 3px; margin-bottom: 4px; }
+    .heart { width: 8px; height: 8px; }
+  }
+
+  /* 刘海屏 / 手势条安全区（FR-MB-04） */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    #hud {
+      padding-top: calc(clamp(10px, 2.2vmin, 20px) + env(safe-area-inset-top));
+      padding-bottom: calc(clamp(10px, 2.2vmin, 20px) + env(safe-area-inset-bottom));
+      padding-left: calc(clamp(12px, 2.6vmin, 24px) + env(safe-area-inset-left));
+      padding-right: calc(clamp(12px, 2.6vmin, 24px) + env(safe-area-inset-right));
+    }
+    #pauseBtn { top: calc(14px + env(safe-area-inset-top)); right: calc(14px + env(safe-area-inset-right)); }
+    #dashBtn { bottom: calc(62px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); }
+    .mute { right: calc(10px + env(safe-area-inset-right)); bottom: calc(10px + env(safe-area-inset-bottom)); }
+  }
+
   .hint {
     position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
     font-family: ui-monospace, Consolas, monospace; font-size: clamp(8px,1.2vmin,11px);
     color: #57606a; letter-spacing: .1em; pointer-events: none;
+    opacity: 1; transition: opacity .6s ease;
+  }
+  .hint.gone { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .screen { animation: none; }
   }
 </style>
 </head>
@@ -154,7 +242,9 @@
   <div id="screen" class="screen"></div>
 
   <button id="mute" class="mute" title="静音 / 取消静音 (M)">🔊</button>
-  <div class="hint">WASD / 方向键移动 · 空格冲刺</div>
+  <button id="pauseBtn" title="暂停 (P)" aria-label="暂停">Ⅱ</button>
+  <button id="dashBtn" title="冲刺" aria-label="冲刺">冲刺</button>
+  <div class="hint" id="hint">WASD / 方向键移动 · 空格冲刺 · P 暂停</div>
 </div>
 
 <script>
@@ -172,20 +262,94 @@
   var comboEl = document.getElementById("combo");
   var heartsEl = document.getElementById("hearts");
   var muteEl = document.getElementById("mute");
+  var pauseBtn = document.getElementById("pauseBtn");
+  var dashBtn = document.getElementById("dashBtn");
+  var wrapEl = document.getElementById("wrap");
+  var hintEl = document.getElementById("hint");
 
+  var APP_VERSION = "1.0.0";
   var AUTO = /(\?|&)auto\b/.test(location.search);
+  var SIM = parseFloat((location.search.match(/[?&]sim=([\d.]+)/) || [])[1] || "0");
+  var TARGET = parseInt((location.search.match(/[?&]score=(\d+)/) || [])[1] || "0", 10) || 0;
   var BEST_KEY = "neon-siege.best";
+  var REDUCED_KEY = "neon-siege.reduced";
+  var DID_KEY = "neon-siege.did";
+  var CONSENT_KEY = "neon-siege.consent";
+  var EVENTS_KEY = "neon-siege.events";
+  var MAX_EVENTS = 200;
 
   var rand = function (a, b) { return a + Math.random() * (b - a); };
   var clamp = function (v, a, b) { return v < a ? a : (v > b ? b : v); };
   var d2 = function (ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; };
 
+  /* ══════════════════ 匿名埋点（FR-AN / 第 10 章） ══════════════════
+     无后端：事件只写本地环形缓冲（≤200 条），可选的 __NEON_TRANSPORT 钩子留给
+     未来的上报端；未同意时不产生任何事件、不写设备 ID。 */
+  function uuid() {
+    var hex = "0123456789abcdef", s = "";
+    for (var i = 0; i < 36; i++) {
+      if (i === 8 || i === 13 || i === 18 || i === 23) s += "-";
+      else if (i === 14) s += "4";
+      else if (i === 19) s += hex[(Math.random() * 4 | 0) + 8];
+      else s += hex[Math.random() * 16 | 0];
+    }
+    return s;
+  }
+
+  var DEVICE_TYPE = "desktop";
+  try {
+    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) DEVICE_TYPE = "mobile";
+  } catch (e) {}
+
+  var A = { consent: null, session: uuid(), device: "", lang: "zh-CN", run: uuid(), buf: [] };
+  try { if (navigator && navigator.language) A.lang = navigator.language; } catch (e) {}
+  try { A.consent = localStorage.getItem(CONSENT_KEY); } catch (e) {}
+  try { A.buf = JSON.parse(localStorage.getItem(EVENTS_KEY) || "[]") || []; } catch (e) { A.buf = []; }
+
+  function consentGranted() { return A.consent === "granted"; }
+
+  function track(name, props) {
+    if (!consentGranted()) return;
+    if (!A.device) {
+      A.device = uuid();
+      try { localStorage.setItem(DID_KEY, A.device); } catch (e) {}
+    }
+    var ev = {
+      e: name, session_id: A.session, device_id: A.device, app_version: APP_VERSION,
+      run_id: A.run, ts: Date.now(), lang: A.lang, device_type: DEVICE_TYPE
+    };
+    if (props) for (var k in props) if (Object.prototype.hasOwnProperty.call(props, k)) ev[k] = props[k];
+    A.buf.push(ev);
+    if (A.buf.length > MAX_EVENTS) A.buf.splice(0, A.buf.length - MAX_EVENTS);
+    try { localStorage.setItem(EVENTS_KEY, JSON.stringify(A.buf)); } catch (e) {}
+    try { if (typeof window.__NEON_TRANSPORT === "function") window.__NEON_TRANSPORT(ev); } catch (e) {}
+  }
+
   /* ══════════════════ 音效 ══════════════════ */
-  var ac = null, muted = false;
+  var ac = null, muted = false, master = null;
   function audio() {
     if (!ac) {
       var AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) { try { ac = new AC(); } catch (e) { ac = null; } }
+      if (AC) {
+        try {
+          ac = new AC();
+          /* 总线限幅：高密度射击时避免多路振荡器叠加削波（FR-AU-04） */
+          master = ac.createGain();
+          master.gain.value = 0.9;
+          var comp = ac.createDynamicsCompressor ? ac.createDynamicsCompressor() : null;
+          if (comp) {
+            comp.threshold.value = -14;
+            comp.knee.value = 12;
+            comp.ratio.value = 8;
+            comp.attack.value = 0.003;
+            comp.release.value = 0.12;
+            master.connect(comp);
+            comp.connect(ac.destination);
+          } else {
+            master.connect(ac.destination);
+          }
+        } catch (e) { ac = null; master = null; }
+      }
     }
     if (ac && ac.state === "suspended") ac.resume();
   }
@@ -198,7 +362,7 @@
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol || 0.05, t + 0.008);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(ac.destination);
+    o.connect(g); g.connect(master || ac.destination);
     o.start(t); o.stop(t + dur + 0.03);
   }
   var sfx = {
@@ -223,11 +387,22 @@
     comboT: 0,
     shake: 0,
     flash: 0,
+    hurtPulse: 0,
     spawnT: 0.7,
-    pickupT: 12,
-    kills: 0
+    pickupT: 16,
+    kills: 0,
+    reduced: false,
+    gate: false,
+    privacy: false,
+    privacyFrom: "menu",
+    killer: "",
+    overAt: 0,
+    hintGone: false,
+    autoSpawn: true
   };
   try { S.best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0; } catch (e) { S.best = 0; }
+  try { S.reduced = localStorage.getItem(REDUCED_KEY) === "1"; } catch (e) {}
+  S.gate = !AUTO && A.consent === null;
 
   var P = { x: W / 2, y: H / 2, r: 12, inv: 0, dashT: 0, dashCd: 0, fireT: 0, dvx: 0, dvy: 0, ang: -Math.PI / 2, moving: 0 };
   var enemies = [], bullets = [], parts = [], pickups = [];
@@ -276,8 +451,19 @@
     return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
   }
 
+  /* 按钮边缘 12px 内起手的手势不驱动移动，避免误触（FR-MB-06） */
+  function nearUi(e, el) {
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    if (!r || !r.width || !r.height) return false;
+    var pad = 12;
+    return e.clientX >= r.left - pad && e.clientX <= r.left + r.width + pad &&
+           e.clientY >= r.top - pad && e.clientY <= r.top + r.height + pad;
+  }
+
   canvas.addEventListener("pointerdown", function (e) {
     if (S.mode !== "play") return;
+    if (nearUi(e, dashBtn) || nearUi(e, pauseBtn)) return;
     var p = toLogical(e);
     stick.on = true; stick.id = e.pointerId;
     stick.ox = p.x; stick.oy = p.y; stick.dx = 0; stick.dy = 0;
@@ -304,15 +490,59 @@
   function show(html) { screenEl.innerHTML = html; screenEl.classList.remove("hidden"); }
   function hide() { screenEl.classList.add("hidden"); screenEl.innerHTML = ""; }
 
+  function reducedLabel() { return S.reduced ? "减弱" : "完整"; }
+
   function menuHTML() {
     return '<div class="panel">' +
       '<h1>NEON<span>SIEGE</span></h1>' +
       '<p class="tag">霓虹围城 · 自动瞄准，专注走位</p>' +
+      (TARGET > 0 ? '<p class="tag target">目标分数 ' + TARGET + ' · 挑战它</p>' : '') +
       '<div class="rules">' +
         '<div><kbd>WASD</kbd>移动　<kbd>空格</kbd>冲刺闪避</div>' +
         '<div><kbd>P</kbd>暂停　<kbd>M</kbd>静音　手机可拖拽移动</div>' +
       '</div>' +
       '<button id="btn">开 始</button>' +
+      '<div><button id="reducedToggle" class="ghost">动效：' + reducedLabel() + '</button>' +
+        '<button id="privacyBtn" class="ghost">隐私说明</button></div>' +
+    '</div>';
+  }
+
+  function gateHTML() {
+    return '<div class="panel gate">' +
+      '<h1>NEON<span>SIEGE</span></h1>' +
+      '<p class="gate__age">首次访问提示 · 本游戏适合 16 岁以上玩家；未满 16 岁需在监护人同意下游玩。</p>' +
+      '<div class="rules">' +
+        '<div>只在本地保存最高分、动效偏好与匿名统计缓冲，不采集身份信息与位置。</div>' +
+        '<div>选择“同意”后记录匿名游玩事件；选择“仅本地游玩”则不记录任何事件。</div>' +
+      '</div>' +
+      '<button id="gateAccept">同意并继续</button>' +
+      '<div><button id="gateDecline" class="ghost">仅本地游玩</button>' +
+        '<button id="privacyBtn" class="ghost">隐私说明</button></div>' +
+    '</div>';
+  }
+
+  function privacyHTML() {
+    return '<div class="panel legal">' +
+      '<h1>隐私说明</h1>' +
+      '<h2>本机（localStorage）存储了什么</h2>' +
+      '<ul>' +
+        '<li>最高分：<code>neon-siege.best</code>，仅用于展示 BEST 与“新纪录”。</li>' +
+        '<li>动效偏好：<code>neon-siege.reduced</code>。</li>' +
+        '<li>是否同意匿名统计：<code>neon-siege.consent</code>。</li>' +
+        '<li>仅在同意后写入：匿名设备 ID <code>neon-siege.did</code>、本地事件缓冲 <code>neon-siege.events</code>（最多 200 条）。</li>' +
+      '</ul>' +
+      '<h2>不做什么</h2>' +
+      '<ul>' +
+        '<li>不接入任何第三方统计 SDK，不加载外部素材，事件不出本机。</li>' +
+        '<li>不采集身份信息、精确位置与按键级全量输入。</li>' +
+        '<li>拒绝统计后，仅在本地保留最高分。</li>' +
+      '</ul>' +
+      '<h2>未成年人</h2>' +
+      '<p>本游戏适合 16 岁以上；未满 16 岁需监护人同意后游玩。</p>' +
+      '<div class="actions">' +
+        '<button id="privacyClose">返 回</button>' +
+        '<button id="dataClear" class="ghost">清除本机数据</button>' +
+      '</div>' +
     '</div>';
   }
 
@@ -327,6 +557,8 @@
         '<div><span class="label">SURVIVED</span><b>' + fmt(S.t) + '</b></div>' +
       '</div>' +
       '<button id="btn">再 来 一 局</button>' +
+      '<div class="share">成绩链接 <code>' + shareUrl() + '</code></div>' +
+      '<div><button id="privacyBtn" class="ghost">隐私说明</button></div>' +
     '</div>';
   }
 
@@ -335,50 +567,136 @@
       '<h1 style="font-size:clamp(22px,5.4vmin,48px)">PAUSED</h1>' +
       '<p class="tag">按 P 或点击继续</p>' +
       '<button id="btn">继 续</button>' +
+      '<div><button id="reducedToggle" class="ghost">动效：' + reducedLabel() + '</button></div>' +
     '</div>';
+  }
+
+  function renderMenu() {
+    if (S.gate) show(gateHTML());
+    else if (S.privacy) show(privacyHTML());
+    else show(menuHTML());
+  }
+
+  function openPrivacy() {
+    S.privacyFrom = S.mode;
+    S.privacy = true;
+    show(privacyHTML());
+  }
+  function closePrivacy() {
+    S.privacy = false;
+    if (S.mode === "pause") show(pauseHTML());
+    else if (S.mode === "over") show(overHTML());
+    else if (S.mode === "play") hide();
+    else renderMenu();
+  }
+
+  function setConsent(v) {
+    A.consent = v;
+    try { localStorage.setItem(CONSENT_KEY, v); } catch (e) {}
+    S.gate = false;
+    S.privacy = false;
+    if (v === "granted") track("app_open", { new_user: S.best === 0 });
+    renderMenu();
+  }
+
+  function clearData() {
+    try {
+      localStorage.removeItem(BEST_KEY);
+      localStorage.removeItem(REDUCED_KEY);
+      localStorage.removeItem(DID_KEY);
+      localStorage.removeItem(CONSENT_KEY);
+      localStorage.removeItem(EVENTS_KEY);
+    } catch (e) {}
+    A.consent = null; A.device = ""; A.buf = [];
+    S.best = 0; S.reduced = false; S.gate = true; S.privacy = false;
+    applyReduced();
+    bestEl.textContent = "0";
+    renderMenu();
   }
 
   screenEl.addEventListener("click", function (e) {
     var id = e.target && e.target.id;
     audio();
+    if (id === "gateAccept") { setConsent("granted"); return; }
+    if (id === "gateDecline") { setConsent("denied"); return; }
+    if (id === "privacyBtn") { openPrivacy(); return; }
+    if (id === "privacyClose") { closePrivacy(); return; }
+    if (id === "dataClear") { clearData(); return; }
+    if (id === "reducedToggle") { toggleReduced(); return; }
+    if (S.privacy || S.gate) return;   // 说明层上点空白不开始游戏
     if (S.mode === "menu") start();
     else if (S.mode === "over") start();
     else if (S.mode === "pause") resume();
   });
+
+  function applyReduced() {
+    wrapEl.classList.toggle("reduced", S.reduced);
+  }
+  function toggleReduced() {
+    S.reduced = !S.reduced;
+    try { localStorage.setItem(REDUCED_KEY, S.reduced ? "1" : "0"); } catch (e) {}
+    applyReduced();
+    if (S.mode === "menu") renderMenu();
+    else if (S.mode === "pause") show(pauseHTML());
+  }
 
   function fmt(t) {
     var m = Math.floor(t / 60), s = Math.floor(t % 60);
     return m + ":" + (s < 10 ? "0" : "") + s;
   }
 
+  /* 结算页可截图的成绩链接：URL 带分，V2.0 分享卡直接复用 */
+  function shareUrl() {
+    var origin = location.origin && location.origin !== "null" ? location.origin + location.pathname : String(location.href).split("?")[0];
+    return origin + "?score=" + (S.score > 0 ? S.score : S.best);
+  }
+
   /* ══════════════════ 生命周期 ══════════════════ */
   function reset() {
     S.t = 0; S.score = 0; S.hp = 3; S.combo = 0; S.comboT = 0;
-    S.shake = 0; S.flash = 0; S.spawnT = 0.7; S.pickupT = 12; S.kills = 0;
+    S.shake = 0; S.flash = 0; S.hurtPulse = 0; S.spawnT = 0.7; S.pickupT = 16; S.kills = 0;
+    S.killer = ""; S.hintGone = false;
+    hintEl.classList.remove("gone");
     P.x = W / 2; P.y = H / 2; P.inv = 1.2; P.dashT = 0; P.dashCd = 0; P.fireT = 0; P.ang = -Math.PI / 2;
     enemies.length = 0; bullets.length = 0; parts.length = 0; pickups.length = 0; trail.length = 0;
     stick.on = false; stick.dx = 0; stick.dy = 0;
   }
 
   function start() {
+    var prev = S.mode, prevScore = S.score;
+    var gap = S.overAt ? (Date.now() - S.overAt) / 1000 : 0;
     reset();
     S.mode = "play";
+    S.gate = false;
+    S.privacy = false;
+    A.run = uuid();
     hide();
     audio();
     syncHud();
+    if (prev === "over") track("restart", { prev_score: prevScore, gap_s: Math.round(gap) });
+    track("run_start", { had_best: S.best > 0 });
   }
   function pause() { if (S.mode !== "play") return; S.mode = "pause"; show(pauseHTML()); }
   function resume() { if (S.mode !== "pause") return; S.mode = "play"; hide(); }
 
   function gameOver() {
     S.mode = "over";
+    S.overAt = Date.now();
     if (S.score > S.best) {
       S.best = S.score;
-      try { localStorage.setItem(BEST_KEY, String(S.best)); } catch (e) {}
+      saveBest();
     }
+    track("game_over", {
+      score: S.score, survived: Math.round(S.t), best: S.best,
+      killer: S.killer || "unknown"
+    });
     sfx.over();
     show(overHTML());
     syncHud();
+  }
+
+  function saveBest() {
+    try { localStorage.setItem(BEST_KEY, String(S.best)); } catch (e) {}
   }
 
   /* ══════════════════ 玩法 ══════════════════ */
@@ -435,14 +753,22 @@
 
     enemies.push({
       x: x, y: y, r: def.r, hp: def.hp, maxHp: def.hp,
-      speed: def.speed * scale, score: def.score,
+      speed: def.speed * scale, score: def.score, type: type,
       color: def.color, glow: def.glow, sides: def.sides,
       flash: 0, wob: rand(0, 6.28), spin: rand(-1.4, 1.4), rot: rand(0, 6.28)
     });
   }
 
-  function boom(x, y, color, n, power) {
-    for (var i = 0; i < n; i++) {
+  function tryPickup() {
+    if (S.hp >= S.maxHp) return null;          // 满血不浪费刷新机会
+    if (pickups.length >= 2) return null;      // 场上上限 2
+    var pk = { x: rand(80, W - 80), y: rand(80, H - 80), r: 11, life: 11, t: 0 };
+    pickups.push(pk);
+    return pk;
+  }
+
+  function boom(x, y, color, n, power) {    var count = S.reduced ? Math.ceil(n / 2) : n;
+    for (var i = 0; i < count; i++) {
       var a = rand(0, 6.283), sp = rand(40, 40 + (power || 180));
       parts.push({
         x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
@@ -457,10 +783,12 @@
     if (scored) {
       var mult = 1 + Math.min(4, S.combo * 0.1);
       S.score += Math.round(e.score * mult);
+      if (S.score > S.best) { S.best = S.score; saveBest(); }
+      track("kill", { type: e.type || "grunt", combo: S.combo, mult: mult, t: Math.round(S.t * 10) / 10 });
       S.combo++;
       S.comboT = 2.5;
     }
-    S.shake = Math.max(S.shake, e.r > 15 ? 9 : 3.5);
+    S.shake = S.reduced ? 0 : Math.max(S.shake, e.r > 15 ? 9 : 3.5);
   }
 
   /* ══════════════════ 更新 ══════════════════ */
@@ -468,8 +796,17 @@
     S.t += dt;
     if (S.shake > 0) S.shake = Math.max(0, S.shake - dt * 42);
     if (S.flash > 0) S.flash = Math.max(0, S.flash - dt * 3.4);
+    if (S.hurtPulse > 0) S.hurtPulse = Math.max(0, S.hurtPulse - dt * 2.2);
 
-    if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) S.combo = 0; }
+    if (!S.hintGone && S.t > 5) { S.hintGone = true; hintEl.classList.add("gone"); }
+
+    if (S.comboT > 0) {
+      S.comboT -= dt;
+      if (S.comboT <= 0) {
+        if (S.combo > 0) track("combo_break", { combo: S.combo, t: Math.round(S.t * 10) / 10 });
+        S.combo = 0;
+      }
+    }
 
     /* --- 玩家移动 --- */
     var ax = 0, ay = 0;
@@ -510,7 +847,17 @@
     if (tgt && P.fireT <= 0) {
       P.fireT = 0.17;
       var ang = Math.atan2(tgt.y - P.y, tgt.x - P.x) + rand(-0.03, 0.03);
-      bullets.push({ x: P.x + Math.cos(ang) * 14, y: P.y + Math.sin(ang) * 14, vx: Math.cos(ang) * 660, vy: Math.sin(ang) * 660, r: 3.4, dmg: 1, life: 1.3 });
+      var mx = P.x + Math.cos(ang) * 14, my = P.y + Math.sin(ang) * 14;
+      bullets.push({ x: mx, y: my, vx: Math.cos(ang) * 660, vy: Math.sin(ang) * 660, r: 3.4, dmg: 1, life: 1.3 });
+      /* 枪口火花（第 7.4 节反馈矩阵） */
+      for (var mi = 0; mi < 3; mi++) {
+        parts.push({
+          x: mx, y: my,
+          vx: Math.cos(ang) * rand(60, 170) + rand(-40, 40),
+          vy: Math.sin(ang) * rand(60, 170) + rand(-40, 40),
+          life: 0.12, max: 0.12, r: rand(1, 2.2), c: "#dff1ff"
+        });
+      }
       sfx.shoot();
     }
 
@@ -538,9 +885,16 @@
         boom(e.x, e.y, e.glow, 18, 240);
         enemies.splice(j, 1);
         S.hp--;
+        S.killer = e.type || "grunt";
         P.inv = 1.3;
-        S.shake = 16;
-        S.flash = 0.55;
+        /* 减少动效时关闭震屏与全屏闪红，改用边缘脉冲保留受击提示（FR-A11Y-01） */
+        S.shake = S.reduced ? 0 : 16;
+        S.flash = S.reduced ? 0 : 0.55;
+        S.hurtPulse = S.reduced ? 1 : 0;
+        track("hurt", {
+          type: e.type || "grunt", hp: S.hp, t: Math.round(S.t * 10) / 10,
+          objects: enemies.length + bullets.length + parts.length
+        });
         sfx.hurt();
         if (S.hp <= 0) { gameOver(); return; }
         continue;
@@ -567,7 +921,7 @@
 
     /* --- 生成 --- */
     S.spawnT -= dt;
-    if (S.spawnT <= 0) {
+    if (S.spawnT <= 0 && S.autoSpawn) {
       spawnEnemy();
       /* 中后期开始成群出现 */
       if (S.t > 35 && Math.random() < Math.min(0.6, (S.t - 35) / 140)) spawnEnemy();
@@ -578,9 +932,7 @@
     S.pickupT -= dt;
     if (S.pickupT <= 0) {
       S.pickupT = 16;
-      if (S.hp < S.maxHp && pickups.length < 2) {
-        pickups.push({ x: rand(80, W - 80), y: rand(80, H - 80), r: 11, life: 11, t: 0 });
-      }
+      tryPickup();
     }
     for (var p = pickups.length - 1; p >= 0; p--) {
       var pk = pickups[p];
@@ -683,6 +1035,8 @@
       var p = pickups[i];
       var pulse = 1 + 0.16 * Math.sin(p.t * 6);
       ctx.save();
+      /* 消失前 2 秒闪烁提示（FR-PK-03） */
+      if (p.life < 2) ctx.globalAlpha = Math.floor(p.life * 10) % 2 === 0 ? 0.3 : 1;
       ctx.globalCompositeOperation = "lighter";
       ctx.shadowColor = "#3fb950";
       ctx.shadowBlur = 20;
@@ -743,7 +1097,7 @@
 
   function render() {
     ctx.save();
-    if (S.shake > 0.2) ctx.translate(rand(-S.shake, S.shake) * 0.5, rand(-S.shake, S.shake) * 0.5);
+    if (S.shake > 0.2 && !S.reduced) ctx.translate(rand(-S.shake, S.shake) * 0.5, rand(-S.shake, S.shake) * 0.5);
 
     drawBg();
     drawPickups();
@@ -754,8 +1108,17 @@
 
     ctx.restore();
 
-    if (S.flash > 0) {
+    if (S.flash > 0 && !S.reduced) {
       ctx.fillStyle = "rgba(255,60,110," + (S.flash * 0.4) + ")";
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    /* 减少动效时的受击提示：只做边缘脉冲，不做全屏闪红 */
+    if (S.hurtPulse > 0) {
+      var hg = ctx.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, H * 0.82);
+      hg.addColorStop(0, "rgba(255,60,110,0)");
+      hg.addColorStop(1, "rgba(255,60,110," + (0.5 * S.hurtPulse).toFixed(3) + ")");
+      ctx.fillStyle = hg;
       ctx.fillRect(0, 0, W, H);
     }
 
@@ -784,6 +1147,10 @@
       for (var i = 0; i < S.maxHp; i++) html += '<span class="heart' + (i < S.hp ? "" : " empty") + '"></span>';
       heartsEl.innerHTML = html;
     }
+
+    var pct = P.dashCd > 0 ? (1 - P.dashCd / 0.95) * 100 : 100;
+    dashBtn.style.setProperty("--p", String(pct));
+    dashBtn.classList.toggle("cooling", P.dashCd > 0);
   }
 
   /* ══════════════════ 主循环 ══════════════════ */
@@ -821,22 +1188,117 @@
     muteEl.classList.toggle("off", muted);
   }
   muteEl.addEventListener("click", function (e) { e.stopPropagation(); toggleMute(); });
+  pauseBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (S.mode === "play") pause();
+    else if (S.mode === "pause") resume();
+  });
+  dashBtn.addEventListener("pointerdown", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    audio();
+    dash();
+  });
 
   setDpr();
+  applyReduced();
   syncHud();
   bestEl.textContent = String(S.best);
 
   if (AUTO) { start(); }
-  else { S.mode = "menu"; show(menuHTML()); }
+  else { S.mode = "menu"; renderMenu(); }
+  if (A.consent === "granted") track("app_open", { new_user: S.best === 0 });
+
+  /* 截图 / 手感复现：?auto=1&sim=12 直接推进 12 秒并渲染一帧 */
+  if (SIM > 0) {
+    if (S.mode !== "play") start();
+    var simSteps = Math.min(120 * 180, Math.round(SIM * 120));
+    for (var si = 0; si < simSteps && S.mode === "play"; si++) update(STEP);
+    syncHud();
+    render();
+  }
 
   requestAnimationFrame(frame);
 
   /* 调试接口（用于自动化测试，不影响玩家） */
   window.__NEON = {
     state: function () {
-      return { mode: S.mode, score: S.score, hp: S.hp, t: S.t, enemies: enemies.length, bullets: bullets.length, parts: parts.length };
+      return {
+        mode: S.mode, score: S.score, best: S.best, hp: S.hp, t: S.t,
+        combo: S.combo, comboT: S.comboT, kills: S.kills,
+        dashT: P.dashT, dashCd: P.dashCd, inv: P.inv, ang: P.ang,
+        x: P.x, y: P.y,
+        enemies: enemies.length, bullets: bullets.length,
+        pickups: pickups.length, parts: parts.length,
+        reduced: S.reduced, gate: S.gate, privacy: S.privacy,
+        flash: S.flash, shake: S.shake, hurtPulse: S.hurtPulse,
+        killer: S.killer
+      };
     },
-    start: start
+    consent: function () { return A.consent; },
+    events: function () { return A.buf.slice(); },
+    track: track,
+    stick: function () { return { on: stick.on, dx: stick.dx, dy: stick.dy }; },
+    pickupTimer: function () { return S.pickupT; },
+    pickupsInfo: function () {
+      return pickups.map(function (p) { return { x: p.x, y: p.y, life: p.life, blink: p.life < 2 }; });
+    },
+    tryPickup: tryPickup,
+    setReduced: function (v) {
+      S.reduced = !!v;
+      try { localStorage.setItem(REDUCED_KEY, S.reduced ? "1" : "0"); } catch (e) {}
+      applyReduced();
+    },
+    sync: syncHud,
+    start: start,
+    pause: pause,
+    resume: resume,
+    tick: function (dt) { if (S.mode === "play") update(dt); },
+    simulate: function (seconds) {
+      var n = Math.min(120 * 180, Math.round(seconds * 120));
+      for (var i = 0; i < n && S.mode === "play"; i++) update(STEP);
+      syncHud();
+      render();
+    },
+    setAutoSpawn: function (v) { S.autoSpawn = !!v; },
+    setTime: function (t) { S.t = t; },
+    setHp: function (n) { S.hp = n; },
+    setPos: function (x, y) { P.x = x; P.y = y; },
+    setCombo: function (n) { S.combo = n; S.comboT = n > 0 ? 2.5 : 0; },
+    setInv: function (s) { P.inv = s; },
+    spawnAt: function (type, x, y) {
+      var def = TYPES[type];
+      var scale = Math.min(2, 1 + S.t * 0.0055);
+      enemies.push({
+        x: x, y: y, r: def.r, hp: def.hp, maxHp: def.hp,
+        speed: def.speed * scale, score: def.score, type: type,
+        color: def.color, glow: def.glow, sides: def.sides,
+        flash: 0, wob: 0, spin: 0, rot: 0
+      });
+    },
+    clearEnemies: function () { enemies.length = 0; },
+    clearBullets: function () { bullets.length = 0; },
+    clearPickups: function () { pickups.length = 0; },
+    addPickup: function (x, y) { pickups.push({ x: x, y: y, r: 11, life: 11, t: 0 }); },
+    setStick: function (x, y) { stick.on = true; stick.dx = x; stick.dy = y; },
+    clearStick: function () { stick.on = false; stick.dx = 0; stick.dy = 0; },
+    dash: dash,
+    spawnEdge: function () {
+      spawnEnemy();
+      var e = enemies[enemies.length - 1];
+      return { x: e.x, y: e.y, type: e.type };
+    },
+    stress: function (nEnemies, nParts) {      for (var i = 0; i < (nEnemies || 60); i++) spawnEnemy();
+      for (var j = 0; j < (nParts || 420); j++) {
+        parts.push({
+          x: rand(0, W), y: rand(0, H), vx: rand(-40, 40), vy: rand(-40, 40),
+          life: rand(0.2, 0.8), max: 0.8, r: rand(1, 3), c: "#79c0ff"
+        });
+      }
+    },
+    interval: function () { return Math.max(0.13, 1.0 - S.t * 0.016); },
+    scale: function () { return Math.min(2.0, 1 + S.t * 0.0055); },
+    speeds: function () { return enemies.map(function (e) { return e.speed; }); }
   };
 })();
 </script>
